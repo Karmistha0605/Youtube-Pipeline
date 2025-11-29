@@ -58,16 +58,19 @@ TEMPLATES = [
 WSGI_APPLICATION = "transcripts_project.wsgi.application"
 
 # PostgreSQL database
+import os
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME", "youtube_transcripts"),
-        "USER": os.getenv("DB_USER", "postgres"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST", "localhost"),
-        "PORT": os.getenv("DB_PORT", "5432"),
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'youtube_pipeline_db'),
+        'USER': os.getenv('DB_USER', 'youtube_pipeline_db_user'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'yourpassword'),
+        'HOST': os.getenv('DB_HOST', 'dpg-d4legh8dl3ps73853mbg-a.oregon-postgres.render.com'),
+        'PORT': os.getenv('DB_PORT', '5432'),  
     }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
