@@ -136,6 +136,7 @@ class PlaylistSearchJobViewSet(viewsets.ModelViewSet):
         return Response({'fetched': fetched_count, 'failed': failed_count})
 
 
+
 class VideoRecordViewSet(viewsets.ModelViewSet):
     queryset = VideoRecord.objects.all()
     serializer_class = VideoRecordSerializer
@@ -144,19 +145,25 @@ class VideoRecordViewSet(viewsets.ModelViewSet):
     def fetch_transcript(self, request, pk=None):
         video = self.get_object()
         try:
+            transcript_text = ""
             # Retry 2 times
             for attempt in range(2):
                 try:
-                    transcript = YouTubeTranscriptApi().fetch(video.video_id)
+                    transcript_list = YouTubeTranscriptApi().fetch(video.video_id)
+                    transcript_text = " ".join([t['text'] for t in transcript_list])
                     break
                 except CouldNotRetrieveTranscript:
-                    if attempt < 2:
+                    if attempt < 1:
                         time.sleep(2)
                     else:
                         raise
+
+            # Save transcript to the DB to show in job_html
+            video.transcript = transcript_text
             video.transcript_fetched = True
             video.save()
-            return Response({'message': f'Transcript fetched for {video.title}'})
+
+            return Response({'message': f'Transcript fetched for {video.title}', 'transcript': transcript_text})
         except (TranscriptsDisabled, NoTranscriptFound, CouldNotRetrieveTranscript) as e:
             return Response({'error': str(e)}, status=400)
         except Exception as e:

@@ -4,61 +4,55 @@
     <title>YouTube Playlist Search</title>
     <style>
       body {
-        background: #eff6e0;
-        color: #01161e;
         font-family: Arial, sans-serif;
-        padding: 40px;
+        padding: 20px;
       }
 
       h1,
       h2 {
-        color: #124559;
+        margin-bottom: 10px;
       }
 
       input {
-        padding: 8px;
-        width: 300px;
-        border: 2px solid #598392;
-        border-radius: 4px;
-        background: white;
+        padding: 6px;
+        width: 250px;
+        margin-right: 6px;
       }
 
       button {
-        padding: 8px 14px;
-        border: none;
-        border-radius: 4px;
-        background: #124559;
-        color: #eff6e0;
+        padding: 6px 12px;
         cursor: pointer;
       }
 
       .job-card {
-        border: 2px solid #aec3b0;
-        border-radius: 6px;
-        padding: 15px;
-        margin-bottom: 12px;
-        background: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
       }
 
       .badge {
-        padding: 4px 8px;
-        border-radius: 4px;
+        padding: 2px 6px;
         font-size: 12px;
         color: white;
+        border-radius: 3px;
       }
 
       .pending {
-        background: #598392;
+        background: gray;
       }
       .processing {
-        background: #124559;
+        background: blue;
       }
       .completed {
-        background: #aec3b0;
-        color: black;
+        background: green;
       }
       .failed {
-        background: #01161e;
+        background: red;
+      }
+
+      a {
+        text-decoration: none;
+        font-size: 14px;
       }
     </style>
   </head>
@@ -75,7 +69,7 @@
       <strong>{{ job.playlist_title|default:"Untitled Playlist" }}</strong
       ><br />
       Videos: {{ job.video_count }}<br />
-      <span class="badge {{ job.status }}">{{ job.status }}</span><br /><br />
+      <span class="badge {{ job.status }}">{{ job.status }}</span><br />
       <a href="/job/{{ job.id }}/">View</a>
     </div>
     {% empty %}
@@ -84,20 +78,18 @@
 
     <script>
       async function searchPlaylist() {
-        const playlistInput = document.getElementById("playlistId"); // matches input id
+        const playlistInput = document.getElementById("playlistId");
         const playlistId = playlistInput.value.trim();
         if (!playlistId) {
           alert("Please enter a playlist ID or URL.");
           return;
         }
 
-        const payload = { playlist_id: playlistId };
-
         try {
           const response = await fetch("/api/playlists/search_playlist/", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+            body: JSON.stringify({ playlist_id: playlistId }),
           });
 
           const data = await response.json();
@@ -110,7 +102,7 @@
           }
         } catch (err) {
           console.error(err);
-          alert("Network error. Check console for details.");
+          alert("Network error.");
         }
       }
     </script>

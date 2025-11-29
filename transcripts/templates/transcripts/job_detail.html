@@ -3,86 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <title>{{ job.playlist_title }}</title>
-
     <style>
       body {
-        margin: 0;
-        padding: 20px;
         font-family: Arial, sans-serif;
-        background: #eff6e0;
-        color: #01161e;
+        padding: 20px;
       }
-
-      h1 {
-        color: #124559;
-      }
-
-      .meta-box {
-        background: #aec3b0;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-      }
-
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 15px;
       }
-
-      th {
-        background: #124559;
-        color: white;
-        padding: 10px;
+      th,
+      td {
+        padding: 8px;
+        border: 1px solid #000000;
         text-align: left;
       }
-
-      td {
-        background: #ffffff;
-        padding: 10px;
-        border-bottom: 1px solid #598392;
-      }
-
       button {
-        padding: 6px 12px;
-        background: #124559;
-        color: white;
-        border: none;
-        border-radius: 5px;
+        padding: 5px 10px;
         cursor: pointer;
       }
-
-      button:disabled {
-        background: #598392;
-        cursor: not-allowed;
+      pre {
+        background: #fffffd;
+        padding: 5px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
       }
-
-      a.back-link {
+      a {
         display: inline-block;
-        margin-bottom: 15px;
-        color: #124559;
-        text-decoration: none;
-        font-weight: bold;
-      }
-
-      a.back-link:hover {
-        text-decoration: underline;
+        margin-bottom: 10px;
       }
     </style>
   </head>
   <body>
-    <a href="/" class="back-link">← Back to Home</a>
+    <a href="/">← Back to Home</a>
 
     <h1>{{ job.playlist_title }}</h1>
-
-    <div class="meta-box">
-      <p><strong>Playlist ID:</strong> {{ job.playlist_id }}</p>
-      <p><strong>Total Videos:</strong> {{ job.video_count }}</p>
-      <p><strong>Status:</strong> {{ job.status }}</p>
-    </div>
+    <p>Playlist ID: {{ job.playlist_id }}</p>
+    <p>Total Videos: {{ job.video_count }}</p>
+    <p>Status: {{ job.status }}</p>
 
     <h2>Videos</h2>
-
     <table>
       <thead>
         <tr>
@@ -97,12 +57,12 @@
           <td>{{ video.title }}</td>
           <td>{{ video.channel_name }}</td>
           <td>
-            {% if video.transcript_fetched %}
-            <button disabled>Done ✓</button>
+            {% if video.transcript_fetched and video.transcript %}
+            <pre>{{ video.transcript }}</pre>
             {% else %}
             <button
-              id="fetch-btn-{{ video.id }}"
-              onclick="fetchOne('{{video.id}}')"
+              id="btn-{{ video.id }}"
+              onclick="fetchTranscript('{{ video.id }}')"
             >
               Fetch
             </button>
@@ -114,8 +74,8 @@
     </table>
 
     <script>
-      async function fetchOne(videoId) {
-        const btn = document.getElementById(`fetch-btn-${videoId}`);
+      async function fetchTranscript(videoId) {
+        const btn = document.getElementById(`btn-${videoId}`);
         btn.disabled = true;
         btn.innerText = "Fetching...";
 
@@ -123,20 +83,18 @@
           const res = await fetch(`/api/videos/${videoId}/fetch_transcript/`, {
             method: "POST",
           });
-
           const data = await res.json();
 
-          if (res.ok) {
-            btn.innerText = "Done ✓";
-            btn.style.backgroundColor = "#AEC3B0";
-            btn.style.color = "black";
+          if (res.ok && data.transcript) {
+            btn.outerHTML = `<pre>${data.transcript}</pre>`;
           } else {
             btn.innerText = "Error";
             alert(data.error || "Something went wrong");
+            btn.disabled = false;
           }
         } catch (err) {
           console.error(err);
-          alert("Network error. Check console for details.");
+          alert("Network error");
           btn.innerText = "Error";
           btn.disabled = false;
         }
