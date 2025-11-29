@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>YouTube Playlist Search</title>
+    <style>
+      body {
+        background: #eff6e0;
+        color: #01161e;
+        font-family: Arial, sans-serif;
+        padding: 40px;
+      }
+
+      h1,
+      h2 {
+        color: #124559;
+      }
+
+      input {
+        padding: 8px;
+        width: 300px;
+        border: 2px solid #598392;
+        border-radius: 4px;
+        background: white;
+      }
+
+      button {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 4px;
+        background: #124559;
+        color: #eff6e0;
+        cursor: pointer;
+      }
+
+      .job-card {
+        border: 2px solid #aec3b0;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 12px;
+        background: white;
+      }
+
+      .badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        color: white;
+      }
+
+      .pending {
+        background: #598392;
+      }
+      .processing {
+        background: #124559;
+      }
+      .completed {
+        background: #aec3b0;
+        color: black;
+      }
+      .failed {
+        background: #01161e;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Search YouTube Playlist</h1>
+
+    <input id="playlistId" placeholder="Playlist ID or URL" />
+    <button onclick="searchPlaylist()">Search</button>
+
+    <h2>Recent Searches</h2>
+
+    {% for job in jobs %}
+    <div class="job-card">
+      <strong>{{ job.playlist_title|default:"Untitled Playlist" }}</strong
+      ><br />
+      Videos: {{ job.video_count }}<br />
+      <span class="badge {{ job.status }}">{{ job.status }}</span><br /><br />
+      <a href="/job/{{ job.id }}/">View</a>
+    </div>
+    {% empty %}
+    <p>No searches yet.</p>
+    {% endfor %}
+
+    <script>
+      async function searchPlaylist() {
+        const playlistInput = document.getElementById("playlistId"); // matches input id
+        const playlistId = playlistInput.value.trim();
+        if (!playlistId) {
+          alert("Please enter a playlist ID or URL.");
+          return;
+        }
+
+        const payload = { playlist_id: playlistId };
+
+        try {
+          const response = await fetch("/api/playlists/search_playlist/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            alert(data.error || "Something went wrong!");
+          } else {
+            alert(data.message);
+            window.location.reload();
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Network error. Check console for details.");
+        }
+      }
+    </script>
+  </body>
+</html>
